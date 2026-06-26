@@ -6,7 +6,7 @@
 
     <groupId>tij.bot</groupId>
     <artifactId>trello2discord</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
 
     <properties>
         <maven.compiler.source>25</maven.compiler.source>
