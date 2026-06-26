@@ -80,7 +80,7 @@ jobs:
       - name: Find JAR
         id: jar
         run: |
-          FILE=$(find target -type f -name "*.jar" ! -name "*sources*" ! -name "*javadoc*" | head -n1)
+          FILE=$(find target -type f -name "*.jar" ! -name "*sources*" ! -name "*javadoc*" ! -name "original*" | head -n1)
           echo "path=$FILE" >> $GITHUB_OUTPUT
 
       - name: Create Release
