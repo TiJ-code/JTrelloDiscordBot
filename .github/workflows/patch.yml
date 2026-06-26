@@ -22,7 +22,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          ./versioning.sh --bump=minor
+          ./versioning.sh --bump=patch
           git add pom.xml
           git commit -m "[ACTION] prepare next iteration $(./versioning.sh --string)"
           git push
