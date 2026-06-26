@@ -20,6 +20,8 @@ jobs:
 
       - name: Create patch bump commit
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           ./versioning.sh --bump=minor
           git add pom.xml
           git commit -m "[ACTION] prepare next iteration $(./versioning.sh --string)"
