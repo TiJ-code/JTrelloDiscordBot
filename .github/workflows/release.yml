@@ -1,0 +1,93 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      skip-next-commit:
+        type: boolean
+        description: "Skip Next-Version Commit?"
+        required: true
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      prev_tag: ${{ steps.prev.outputs.prev_tag }}
+      name: ${{ steps.release.outputs.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-tags: true
+
+      - name: Get previous tag
+        id: prev
+        run: |
+          PREV=$(git tag -l "releases/*" --sort=-v:refname | sed -n 2p)
+          echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
+
+      - name: Do release
+        id: release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          ./versioning.sh --release
+          
+          NAME=$(./versioning.sh --string)
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          TAG="releases/$NAME"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
+          git add pom.xml
+          git commit -m "[ACTION] release $NAME"
+          git tag "$TAG"
+          git push origin main
+          git push origin "$TAG"
+
+      - name: Create bump commit
+        if: ${{ inputs.skip-next-commit == 'true' }}
+        run: |
+          ./versioning.sh --bump=minor
+          git add pom.xml
+          git commit -m "[ACTION] prepare next iteration $(./versioning.sh --string)"
+          git push
+
+  build:
+    needs: versioning
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.versioning.outputs.tag }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+
+      - name: Build
+        run: mvn -B clean package
+
+      - name: Find JAR
+        id: jar
+        run: |
+          FILE=$(find target -type f -name "*.jar" ! -name "*sources*" ! -name "*javadoc*" | head -n1)
+          echo "path=$FILE" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ needs.versioning.outputs.name }}
+          tag_name: ${{ needs.versioning.outputs.tag }}
+          previous_tag: ${{ needs.versioning.outputs.prev_tag }}
+          files: ${{ steps.jar.outputs.path }}
+          generate_release_notes: true
