@@ -19,7 +19,6 @@ jobs:
           ref: main
 
       - name: Create patch bump commit
-        if: ${{ inputs.skip-next-commit == 'false' }}
         run: |
           ./versioning.sh --bump=minor
           git add pom.xml
