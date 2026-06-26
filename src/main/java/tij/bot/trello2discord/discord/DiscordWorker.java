@@ -59,20 +59,37 @@ public class DiscordWorker {
             return;
         }
 
-        String discordAuthorId = userMappings.stream()
+        Optional<String> discordAuthorId = userMappings.stream()
                 .filter(m -> m.trelloUserId().equals(msg.getAuthorName()))
                 .map(ConfigUserMapping::discordUserId)
-                .limit(1)
-                .toString();
+                .findFirst();
 
-        User discordAuthor = jda.getUserById(Long.parseLong(discordAuthorId));
+        User discordAuthor = discordAuthorId
+                .map(id -> jda.getUserById(Long.parseLong(id)))
+                .orElse(null);
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setColor(Constants.COLOR_TRELLO_BLUE)
-                .setAuthor(discordAuthor.getEffectiveName(), discordAuthor.getAsMention(), msg.getAuthorAvatarUrl())
                 .setTitle(msg.getTitle())
                 .setDescription(msg.getBody())
-                .setFooter("Trello • " + msg.getBoardName(), "https://www.vectorlogo.zone/logos/trello/trello-icon.svg");
+                .setFooter(
+                        "Trello • " + msg.getBoardName(),
+                        "https://www.vectorlogo.zone/logos/trello/trello-icon.svg"
+                );
+
+        if (discordAuthor != null) {
+            embed.setAuthor(
+                    discordAuthor.getEffectiveName(),
+                    null,
+                    discordAuthor.getEffectiveAvatarUrl()
+            );
+        } else {
+            embed.setAuthor(
+                    msg.getAuthorName(),
+                    null,
+                    msg.getAuthorAvatarUrl()
+            );
+        }
 
         msg.getFields().forEach((k, v) -> embed.addField(k, v, false));
 
