@@ -21,35 +21,55 @@ public class TrelloJsonParser {
         String cardName = data.has(JsonConstants.OBJECT_CARD) ? data.getJSONObject(JsonConstants.OBJECT_CARD).getString(JsonConstants.FIELD_NAME) : "N/A";
         String boardName = data.getJSONObject(JsonConstants.OBJECT_BOARD).getString(JsonConstants.FIELD_NAME);
 
+        MessageType type;
         Message.Builder builder;
 
         switch (actionType) {
             case JsonConstants.EVENT_CREATE_CARD:
-                builder = new Message.Builder(MessageType.CARD_CREATED, boardName, memberName)
-                        .title("📥 New Card Created")
-                        .body("**Card:** " + cardName);
+                type = MessageType.CARD_CREATED;
+                builder = new Message.Builder(type, boardName, memberName)
+                        .title(type.getTitleMessage())
+                        .body(buildCardString(cardName));
                 if (data.has(JsonConstants.OBJECT_LIST)) {
-                    builder.addField("List", data.getJSONObject(JsonConstants.OBJECT_LIST).getString(JsonConstants.FIELD_NAME));
+                    builder.addField(
+                          type.getFields()[0].title(),
+                          type.getFields()[0].bodyFormat(
+                                  data.getJSONObject(JsonConstants.OBJECT_LIST).getString(JsonConstants.FIELD_NAME)
+                          )
+                    );
                 }
                 break;
 
             case JsonConstants.EVENT_COMMENT_CARD:
+                type = MessageType.CARD_CREATED;
                 builder = new Message.Builder(MessageType.CARD_COMMENTED, boardName, memberName)
-                        .title("💬 New Comment on Card")
-                        .body("**Card:** " + cardName + "\n\n**Comment:** " + data.getString(JsonConstants.FIELD_TEXT));
+                        .title(type.getTitleMessage())
+                        .body(buildCardString(cardName) + type.getBodyFormat(data.getString(JsonConstants.FIELD_TEXT)));
                 break;
 
             case JsonConstants.EVENT_UPDATE_CARD:
                 if (data.has(JsonConstants.OBJECT_LIST_AFTER) && data.has(JsonConstants.OBJECT_LIST_BEFORE)) {
-                    builder = new Message.Builder(MessageType.CARD_MOVED, boardName, memberName)
-                            .title("🚚 Card Moved")
-                            .body("**Card:**" + cardName)
-                            .addField("From", data.getJSONObject(JsonConstants.OBJECT_LIST_BEFORE).getString(JsonConstants.FIELD_NAME))
-                            .addField("To", data.getJSONObject(JsonConstants.OBJECT_LIST_AFTER).getString(JsonConstants.FIELD_NAME));
+                    type = MessageType.CARD_CREATED;
+                    builder = new Message.Builder(type, boardName, memberName)
+                            .title(type.getTitleMessage())
+                            .body(buildCardString(cardName))
+                            .addField(
+                                    type.getFields()[0].title(),
+                                    type.getFields()[0].bodyFormat(
+                                            data.getJSONObject(JsonConstants.OBJECT_LIST_BEFORE).getString(JsonConstants.FIELD_NAME)
+                                    )
+                            )
+                            .addField(
+                                    type.getFields()[1].title(),
+                                    type.getFields()[1].bodyFormat(
+                                            data.getJSONObject(JsonConstants.OBJECT_LIST_AFTER).getString(JsonConstants.FIELD_NAME)
+                                    )
+                            );
                 } else {
-                    builder = new Message.Builder(MessageType.GENERIC_UPDATE, boardName, memberName)
-                            .title("✏️ Card Updated")
-                            .body("**Card:** " + cardName);
+                    type = MessageType.GENERIC_UPDATE;
+                    builder = new Message.Builder(type, boardName, memberName)
+                            .title(type.getTitleMessage())
+                            .body(buildCardString(cardName));
                 }
                 break;
 
@@ -58,5 +78,9 @@ public class TrelloJsonParser {
         }
 
         return Optional.of(builder.authorAvatarUrl(avatarUrl).build());
+    }
+
+    private static String buildCardString(String cardName) {
+        return "**Card:** %s".formatted(cardName);
     }
 }
