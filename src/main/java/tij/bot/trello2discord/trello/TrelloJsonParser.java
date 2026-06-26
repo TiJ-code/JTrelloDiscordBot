@@ -41,15 +41,15 @@ public class TrelloJsonParser {
                 break;
 
             case JsonConstants.EVENT_COMMENT_CARD:
-                type = MessageType.CARD_CREATED;
-                builder = new Message.Builder(MessageType.CARD_COMMENTED, boardName, memberName)
+                type = MessageType.CARD_COMMENTED;
+                builder = new Message.Builder(type, boardName, memberName)
                         .title(type.getTitleMessage())
                         .body(buildCardString(cardName) + type.getBodyFormat(data.getString(JsonConstants.FIELD_TEXT)));
                 break;
 
             case JsonConstants.EVENT_UPDATE_CARD:
                 if (data.has(JsonConstants.OBJECT_LIST_AFTER) && data.has(JsonConstants.OBJECT_LIST_BEFORE)) {
-                    type = MessageType.CARD_CREATED;
+                    type = MessageType.CARD_MOVED;
                     builder = new Message.Builder(type, boardName, memberName)
                             .title(type.getTitleMessage())
                             .body(buildCardString(cardName))
