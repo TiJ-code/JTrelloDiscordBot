@@ -1,0 +1,27 @@
+name: Patch Commit
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      prev_tag: ${{ steps.prev.outputs.prev_tag }}
+      name: ${{ steps.release.outputs.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Create patch bump commit
+        if: ${{ inputs.skip-next-commit == 'false' }}
+        run: |
+          ./versioning.sh --bump=minor
+          git add pom.xml
+          git commit -m "[ACTION] prepare next iteration $(./versioning.sh --string)"
+          git push
