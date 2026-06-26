@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT config (entry*, userMapping?)>
+<!ATTLIST config
+    version CDATA #REQUIRED
+>
+
+<!ELEMENT entry (#PCDATA)>
+<!ATTLIST entry
+    name CDATA #REQUIRED
+>
+
+<!ELEMENT userMapping (user*)>
+
+<!ELEMENT user EMPTY>
+<!ATTLIST user
+    discord.user.id CDATA #REQUIRED
+    trello.user.id CDATA #REQUIRED
+>
