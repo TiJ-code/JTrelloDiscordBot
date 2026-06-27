@@ -25,10 +25,6 @@ public enum MessageType {
             "🏷️ Removed Label From Card",
             "%s",
             MessageField.of("Label", "%s")
-    ),
-    GENERIC_UPDATE(
-            "✏️ Card Updated",
-            "%s"
     );
 
     private final String titleMessage;

@@ -5,7 +5,9 @@ import tij.bot.trello2discord.common.Message;
 import tij.bot.trello2discord.common.MessageType;
 import tij.bot.trello2discord.trello.utils.JsonConstants;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TrelloJsonParser {
     public static Optional<Message> parse(JSONObject json) {
@@ -13,93 +15,107 @@ public class TrelloJsonParser {
             return Optional.empty();
 
         JSONObject action = json.getJSONObject(JsonConstants.OBJECT_ACTION);
-        String actionType = action.getString(JsonConstants.FIELD_TYPE);
-        String memberName = action.getJSONObject(JsonConstants.OBJECT_MEMBER_CREATOR).getString(JsonConstants.FIELD_FULL_NAME);
-        String avatarUrl = action.getJSONObject(JsonConstants.OBJECT_MEMBER_CREATOR).optString(JsonConstants.FIELD_AVATAR_URL, "") + "/50.png";
+        String actionType = action.optString(JsonConstants.FIELD_TYPE, "");
 
-        JSONObject data = action.getJSONObject(JsonConstants.OBJECT_DATA);
-        String cardName = data.has(JsonConstants.OBJECT_CARD) ? data.getJSONObject(JsonConstants.OBJECT_CARD).getString(JsonConstants.FIELD_NAME) : "N/A";
-        String boardName = data.getJSONObject(JsonConstants.OBJECT_BOARD).getString(JsonConstants.FIELD_NAME);
+        JSONObject member = action.optJSONObject(JsonConstants.OBJECT_MEMBER_CREATOR);
+        String memberName = member != null
+                ? member.optString(JsonConstants.FIELD_FULL_NAME, "Unknown")
+                : "Unknown";
 
-        MessageType type;
-        Message.Builder builder;
+        String avatarUrl = member != null
+                ? member.optString(JsonConstants.FIELD_AVATAR_URL, "") + "/50.png"
+                : "";
 
-        switch (actionType) {
-            case JsonConstants.EVENT_CREATE_CARD:
-                type = MessageType.CARD_CREATED;
-                builder = new Message.Builder(type, boardName, memberName)
+        JSONObject data = action.optJSONObject(JsonConstants.OBJECT_DATA);
+        if (data == null) return Optional.empty();
+
+        JSONObject cardObj = data.optJSONObject(JsonConstants.OBJECT_CARD);
+        String cardId = cardObj != null ? cardObj.optString("id", "unknown") : "unknown";
+        String cardName = cardObj != null ? cardObj.optString(JsonConstants.FIELD_NAME, "N/A") : "N/A";
+
+        String boardName = data.optJSONObject(JsonConstants.OBJECT_BOARD) != null
+                ? data.getJSONObject(JsonConstants.OBJECT_BOARD).optString(JsonConstants.FIELD_NAME, "Unknown Board")
+                : "Unknown Board";
+
+        return switch (actionType) {
+
+            case JsonConstants.EVENT_CREATE_CARD -> {
+                MessageType type = MessageType.CARD_CREATED;
+
+                Message.Builder builder = new Message.Builder(type, boardName, memberName)
                         .title(type.getTitleMessage())
                         .body(buildCardString(cardName));
-                if (data.has(JsonConstants.OBJECT_LIST)) {
+
+                JSONObject list = data.optJSONObject(JsonConstants.OBJECT_LIST);
+                if (list != null && type.getFields().length > 0) {
                     builder.addField(
-                          type.getFields()[0].title(),
-                          type.getFields()[0].bodyFormat(
-                                  data.getJSONObject(JsonConstants.OBJECT_LIST).getString(JsonConstants.FIELD_NAME)
-                          )
+                            type.getFields()[0].title(),
+                            type.getFields()[0].bodyFormat(list.optString(JsonConstants.FIELD_NAME, ""))
                     );
                 }
-                break;
 
-            case JsonConstants.EVENT_COMMENT_CARD:
-                type = MessageType.CARD_COMMENTED;
-                builder = new Message.Builder(type, boardName, memberName)
+                yield Optional.of(builder.authorAvatarUrl(avatarUrl).build());
+            }
+
+            case JsonConstants.EVENT_COMMENT_CARD -> {
+                MessageType type = MessageType.CARD_COMMENTED;
+
+                String comment = data.optString(JsonConstants.FIELD_TEXT, "");
+
+                Message.Builder builder = new Message.Builder(type, boardName, memberName)
                         .title(type.getTitleMessage())
-                        .body(buildCardString(cardName) + type.getBodyFormat(data.getString(JsonConstants.FIELD_TEXT)));
-                break;
+                        .body(buildCardString(cardName) + type.getBodyFormat(comment));
 
-            case JsonConstants.EVENT_ADDED_LABEL_TO_CARD, 
-                 JsonConstants.EVENT_REMOVED_LABEL_FROM_CARD:
-                JSONObject label = data.getJSONObject(JsonConstants.OBJECT_LABEL);
+                yield Optional.of(builder.authorAvatarUrl(avatarUrl).build());
+            }
 
-                if (label == null) {
-                    return Optional.empty();
-                }
+            case JsonConstants.EVENT_ADDED_LABEL_TO_CARD,
+                 JsonConstants.EVENT_REMOVED_LABEL_FROM_CARD -> {
+                JSONObject label = data.optJSONObject(JsonConstants.OBJECT_LABEL);
+                if (label == null) yield Optional.empty();
 
-                type = (JsonConstants.EVENT_ADDED_LABEL_TO_CARD.equals(actionType))
+                MessageType type = JsonConstants.EVENT_ADDED_LABEL_TO_CARD.equals(actionType)
                         ? MessageType.CARD_ADDED_LABEL
                         : MessageType.CARD_REMOVED_LABEL;
-                builder = new Message.Builder(type, boardName, memberName)
-                         .title(type.getTitleMessage())
-                         .body(type.getBodyFormat(buildCardString(cardName)))
-                         .addField(
-                            type.getFields()[0].title(),
-                            type.getFields()[0].bodyFormat(
-                                    label.getString(JsonConstants.FIELD_NAME)
-                            )
-                         );
-                break;
 
-            case JsonConstants.EVENT_UPDATE_CARD:
-                if (data.has(JsonConstants.OBJECT_LIST_AFTER) && data.has(JsonConstants.OBJECT_LIST_BEFORE)) {
-                    type = MessageType.CARD_MOVED;
-                    builder = new Message.Builder(type, boardName, memberName)
-                            .title(type.getTitleMessage())
-                            .body(buildCardString(cardName))
-                            .addField(
-                                    type.getFields()[0].title(),
-                                    type.getFields()[0].bodyFormat(
-                                            data.getJSONObject(JsonConstants.OBJECT_LIST_BEFORE).getString(JsonConstants.FIELD_NAME)
-                                    )
-                            )
-                            .addField(
-                                    type.getFields()[1].title(),
-                                    type.getFields()[1].bodyFormat(
-                                            data.getJSONObject(JsonConstants.OBJECT_LIST_AFTER).getString(JsonConstants.FIELD_NAME)
-                                    )
-                            );
-                } else {
-                    type = MessageType.GENERIC_UPDATE;
-                    builder = new Message.Builder(type, boardName, memberName)
-                            .title(type.getTitleMessage())
-                            .body(buildCardString(cardName));
+                Message.Builder builder = new Message.Builder(type, boardName, memberName)
+                        .title(type.getTitleMessage())
+                        .body(type.getBodyFormat(buildCardString(cardName)))
+                        .addField(
+                                type.getFields()[0].title(),
+                                type.getFields()[0].bodyFormat(label.optString(JsonConstants.FIELD_NAME, ""))
+                        );
+
+                yield Optional.of(builder.authorAvatarUrl(avatarUrl).build());
+            }
+
+            case JsonConstants.EVENT_UPDATE_CARD -> {
+                JSONObject before = data.optJSONObject(JsonConstants.OBJECT_LIST_BEFORE);
+                JSONObject after = data.optJSONObject(JsonConstants.OBJECT_LIST_AFTER);
+
+                if (before == null || after == null) {
+                    yield Optional.empty();
                 }
-                break;
 
-            default:
-                return Optional.empty();
-        }
+                MessageType type = MessageType.CARD_MOVED;
 
-        return Optional.of(builder.authorAvatarUrl(avatarUrl).build());
+                Message.Builder builder = new Message.Builder(type, boardName, memberName)
+                        .title(type.getTitleMessage())
+                        .body(buildCardString(cardName))
+                        .addField(
+                                type.getFields()[0].title(),
+                                type.getFields()[0].bodyFormat(before.optString(JsonConstants.FIELD_NAME, ""))
+                        )
+                        .addField(
+                                type.getFields()[1].title(),
+                                type.getFields()[1].bodyFormat(after.optString(JsonConstants.FIELD_NAME, ""))
+                        );
+
+                yield Optional.of(builder.authorAvatarUrl(avatarUrl).build());
+            }
+
+            default -> Optional.empty();
+        };
     }
 
     private static String buildCardString(String cardName) {
