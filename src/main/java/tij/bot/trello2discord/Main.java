@@ -23,14 +23,30 @@ public class Main {
 
         MessageBuffer buffer = new MessageBuffer();
 
+        DiscordWorker discordWorker;
+        HttpServer server;
         try {
-            DiscordWorker discordWorker = new DiscordWorker(config, buffer);
+            discordWorker = new DiscordWorker(config, buffer);
             discordWorker.startConsuming();
 
-            HttpServer server = HttpServer.create(new InetSocketAddress(config.port()), 0);
+            ConfigSystem.startWatcher(discordWorker::reload);
+
+            server = HttpServer.create(new InetSocketAddress(config.port()), 0);
             server.createContext("/trello-webhook", new TrelloWebhookHandler(buffer));
             server.setExecutor(null);
             server.start();
+
+            final HttpServer finalServer = server;
+            final DiscordWorker finalDiscordWorker = discordWorker;
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    ConfigSystem.stopWatcher();
+                    finalServer.stop(0);
+                    finalDiscordWorker.shutdown("Application quitting.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
 
             System.out.println("=========================================");
             System.out.println("Trello2Discord Bot is fully online.");
