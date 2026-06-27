@@ -16,6 +16,7 @@ public final class JsonConstants {
     public static final String FIELD_FULL_NAME = "fullName";
     public static final String FIELD_AVATAR_URL = "avatarUrl";
     public static final String FIELD_NAME = "name";
+    public static final String FIELD_DESC = "desc";
     public static final String FIELD_TEXT = "text";
 
 

@@ -25,6 +25,18 @@ public enum MessageType {
             "🏷️ Removed Label From Card",
             "%s",
             MessageField.of("Label", "%s")
+    ),
+    CARD_DESCRIPTION_CHANGED(
+            "📝 Description Updated",
+            "%s",
+            MessageField.of("Before", "%s"),
+            MessageField.of("After", "%s")
+    ),
+    CARD_TITLE_CHANGED(
+            "✏️ Title Updated",
+            "%s",
+            MessageField.of("Before", "%s"),
+            MessageField.of("After", "%s")
     );
 
     private final String titleMessage;
