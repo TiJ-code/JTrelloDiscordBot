@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import org.json.JSONObject;
 import tij.bot.trello2discord.common.Message;
 import tij.bot.trello2discord.common.MessageBuffer;
+import tij.bot.trello2discord.config.events.EventRegistry;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,9 +23,11 @@ public class TrelloWebhookHandler implements HttpHandler {
     private static final int HTTP_CODE_NOT_ALLOWED = 405;
 
     private final MessageBuffer buffer;
+    private final TrelloJsonParser parser;
 
-    public TrelloWebhookHandler(MessageBuffer buffer) {
+    public TrelloWebhookHandler(MessageBuffer buffer, EventRegistry eventRegistry) {
         this.buffer = buffer;
+        this.parser = new TrelloJsonParser(eventRegistry);
     }
 
     @Override
@@ -63,6 +66,6 @@ public class TrelloWebhookHandler implements HttpHandler {
     }
 
     private Optional<Message> processTrelloEvent(JSONObject json) {
-        return TrelloJsonParser.parse(json);
+        return parser.parse(json);
     }
 }

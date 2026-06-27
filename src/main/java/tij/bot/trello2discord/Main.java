@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import tij.bot.trello2discord.common.MessageBuffer;
 import tij.bot.trello2discord.config.Config;
 import tij.bot.trello2discord.config.ConfigSystem;
+import tij.bot.trello2discord.config.events.EventRegistry;
 import tij.bot.trello2discord.discord.DiscordWorker;
 import tij.bot.trello2discord.trello.TrelloWebhookHandler;
 
@@ -21,18 +22,21 @@ public class Main {
         Config config = optConfig.get();
         System.out.println("Config loaded successfully.");
 
+        EventRegistry eventRegistry = new EventRegistry(config.events());
+
         MessageBuffer buffer = new MessageBuffer();
 
         DiscordWorker discordWorker;
         HttpServer server;
         try {
             discordWorker = new DiscordWorker(config, buffer);
+            discordWorker.setEventRegistry(eventRegistry);
             discordWorker.startConsuming();
 
             ConfigSystem.startWatcher(discordWorker::reload);
 
             server = HttpServer.create(new InetSocketAddress(config.port()), 0);
-            server.createContext("/trello-webhook", new TrelloWebhookHandler(buffer));
+            server.createContext("/trello-webhook", new TrelloWebhookHandler(buffer, eventRegistry));
             server.setExecutor(null);
             server.start();
 
