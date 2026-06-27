@@ -10,77 +10,77 @@
     <events>
         <event name="CARD_CREATED">
             <format key="title">📥 New Card Created</format>
-            <format key="body">**Card:** {#card.title}</format>
+            <format key="body">**Card:** {#data.card.name}</format>
             <fields>
                 <field>
                     <format key="title">List</format>
-                    <format key="body">{#card.title}</format>
+                    <format key="body">{#data.card.name}</format>
                 </field>
             </fields>
         </event>
         <event name="CARD_COMMENTED">
             <format key="title">💬 New Comment on Card</format>
-            <format key="body">**Card:** {#card.title}\n\n**Comment:** %s</format>
+            <format key="body">**Card:** {#data.card.name}{!N}{!N}**Comment:** {#data.text}</format>
         </event>
         <event name="CARD_MOVED">
             <format key="title">🚚 Card Moved</format>
-            <format key="body">**Card:** {#card.title}</format>
+            <format key="body">**Card:** {#card.name}</format>
             <fields>
                 <field>
                     <format key="title">From</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.listBefore.name}</format>
                 </field>
                 <field>
                     <format key="title">To</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.listAfter.name}</format>
                 </field>
             </fields>
         </event>
         <event name="CARD_ADDED_LABEL">
             <format key="title">🏷️ Added Label To Card</format>
-            <format key="body">**Card:** {#card.title}</format>
+            <format key="body">**Card:** {#data.card.name}</format>
             <fields>
                 <field>
                     <format key="title">Label</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.label.name}</format>
                 </field>
             </fields>
         </event>
         <event name="CARD_REMOVED_LABEL">
             <format key="title">🏷️ Removed Label From Card</format>
-            <format key="body">**Card:** {#card.title}</format>
+            <format key="body">**Card:** {#data.card.name}</format>
             <fields>
                 <field>
                     <format key="title">Label</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.label.name}</format>
                 </field>
             </fields>
         </event>
         <event name="CARD_DESCRIPTION_CHANGED">
             <format key="title">📝 Description Updated</format>
-            <format key="body">**Card:** {#card.title}</format>
+            <format key="body">**Card:** {#card.name}</format>
             <fields>
                 <field>
                     <format key="title">Before</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.old.desc}</format>
                 </field>
                 <field>
                     <format key="title">After</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.card.desc}</format>
                 </field>
             </fields>
         </event>
         <event name="CARD_TITLE_CHANGED">
             <format key="title">✏️ Title Updated</format>
-            <format key="body">**Card:** {#card.title}</format>
+            <format key="body">**Card:** {#data.card.name}</format>
             <fields>
                 <field>
                     <format key="title">Before</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.old.name}</format>
                 </field>
                 <field>
                     <format key="title">After</format>
-                    <format key="body">%s</format>
+                    <format key="body">{#data.card.name}</format>
                 </field>
             </fields>
         </event>

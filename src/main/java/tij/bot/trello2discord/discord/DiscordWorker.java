@@ -10,6 +10,7 @@ import tij.bot.trello2discord.common.Message;
 import tij.bot.trello2discord.common.MessageBuffer;
 import tij.bot.trello2discord.config.Config;
 import tij.bot.trello2discord.config.ConfigUserMapping;
+import tij.bot.trello2discord.config.events.EventRegistry;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,7 @@ public class DiscordWorker {
     private final MessageBuffer buffer;
     private volatile String channelId;
     private volatile List<ConfigUserMapping> userMappings;
+    private EventRegistry eventRegistry;
     private Thread consumerThread;
 
     public DiscordWorker(Config config, MessageBuffer buffer) throws InterruptedException {
@@ -77,6 +79,10 @@ public class DiscordWorker {
         }
 
         System.out.println("Stopping application.");
+    }
+
+    public void setEventRegistry(EventRegistry eventRegistry) {
+        this.eventRegistry = eventRegistry;
     }
 
     private void publish(Message msg) {
