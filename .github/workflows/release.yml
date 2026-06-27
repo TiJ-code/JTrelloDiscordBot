@@ -51,7 +51,7 @@ jobs:
           git push origin "$TAG"
 
       - name: Create bump commit
-        if: ${{ inputs.skip-next-commit == 'false' }}
+        if: ${{ !inputs.skip-next-commit }}
         run: |
           ./versioning.sh --bump=minor
           git add pom.xml
