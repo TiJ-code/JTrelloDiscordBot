@@ -47,6 +47,28 @@ public class TrelloJsonParser {
                         .body(buildCardString(cardName) + type.getBodyFormat(data.getString(JsonConstants.FIELD_TEXT)));
                 break;
 
+            case JsonConstants.EVENT_ADDED_LABEL_TO_CARD, 
+                 JsonConstants.EVENT_REMOVED_LABEL_FROM_CARD:
+                JSONObject label = data.getJSONObject(JsonConstants.OBJECT_LABEL);
+
+                if (label == null) {
+                    return Optional.empty();
+                }
+
+                type = (JsonConstants.EVENT_ADDED_LABEL_TO_CARD.equals(actionType))
+                        ? MessageType.CARD_ADDED_LABEL
+                        : MessageType.CARD_REMOVED_LABEL;
+                builder = new Message.Builder(type, boardName, memberName)
+                         .title(type.getTitleMessage())
+                         .body(type.getBodyFormat(buildCardString(cardName)))
+                         .addField(
+                            type.getFields()[0].title(),
+                            type.getFields()[0].bodyFormat(
+                                    label.getString(JsonConstants.FIELD_NAME)
+                            )
+                         );
+                break;
+
             case JsonConstants.EVENT_UPDATE_CARD:
                 if (data.has(JsonConstants.OBJECT_LIST_AFTER) && data.has(JsonConstants.OBJECT_LIST_BEFORE)) {
                     type = MessageType.CARD_MOVED;

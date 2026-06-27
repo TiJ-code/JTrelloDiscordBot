@@ -16,6 +16,16 @@ public enum MessageType {
             MessageField.of("From", "%s"),
             MessageField.of("To", "%s")
     ),
+    CARD_ADDED_LABEL(
+            "🏷️ Added Label To Card",
+            "%s",
+            MessageField.of("Label", "%s")
+    ),
+    CARD_REMOVED_LABEL(
+            "🏷️ Removed Label From Card",
+            "%s",
+            MessageField.of("Label", "%s")
+    ),
     GENERIC_UPDATE(
             "✏️ Card Updated",
             "%s"
