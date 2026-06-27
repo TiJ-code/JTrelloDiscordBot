@@ -13,17 +13,18 @@ import tij.bot.trello2discord.config.ConfigUserMapping;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class DiscordWorker {
 
     private final JDA jda;
-    private final String channelId;
     private final MessageBuffer buffer;
-    private final List<ConfigUserMapping> userMappings;
+    private volatile String channelId;
+    private volatile List<ConfigUserMapping> userMappings;
+    private Thread consumerThread;
 
     public DiscordWorker(Config config, MessageBuffer buffer) throws InterruptedException {
-        this.channelId = config.discordChannelId();
-        this.userMappings = config.discordTrelloUserMapping();
+        this.reload(config);
         this.buffer = buffer;
 
         System.out.println("Connecting to Discord...");
@@ -32,7 +33,7 @@ public class DiscordWorker {
     }
 
     public void startConsuming() {
-        Thread consumerThread = new Thread(() -> {
+        consumerThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Message msg = buffer.pop();
@@ -50,6 +51,32 @@ public class DiscordWorker {
         consumerThread.setDaemon(true);
         consumerThread.setName("Discord-Publisher-Thread");
         consumerThread.start();
+    }
+
+    public void reload(Config config) {
+        this.channelId = config.discordChannelId();
+        this.userMappings = List.copyOf(config.discordTrelloUserMapping());
+    }
+
+    public void shutdown(String reason) {
+        System.err.println(reason);
+
+        try {
+            System.out.println("Disconnecting Discord...");
+
+            consumerThread.interrupt();
+            jda.shutdown();
+
+            if (!jda.awaitShutdown(10, TimeUnit.SECONDS)) {
+                System.out.println("Force shutdown Discord.");
+                jda.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            jda.shutdownNow();
+        }
+
+        System.out.println("Stopping application.");
     }
 
     private void publish(Message msg) {
