@@ -1,6 +1,16 @@
-name: Patch Commit
+name: Commit
 on:
   workflow_dispatch:
+    inputs:
+      bump:
+        type: choice
+        required: true
+        default: patch
+        description: What kind of commit?
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
@@ -22,7 +32,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          ./versioning.sh --bump=patch
+          ./versioning.sh --bump=${{ inputs.bump }}
           git add pom.xml
           git commit -m "[ACTION] prepare next iteration $(./versioning.sh --string)"
           git push
