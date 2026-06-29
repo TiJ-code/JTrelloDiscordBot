@@ -7,6 +7,7 @@ import tij.bot.trello2discord.config.events.EventRegistry;
 import tij.bot.trello2discord.config.events.EventTemplate;
 import tij.bot.trello2discord.config.events.FieldTemplate;
 import tij.bot.trello2discord.config.utils.IgnoreRegistry;
+import tij.bot.trello2discord.config.utils.XmlConstants;
 import tij.bot.trello2discord.trello.utils.JsonConstants;
 import tij.bot.trello2discord.trello.utils.TemplateRenderer;
 
@@ -71,10 +72,10 @@ public class TrelloJsonParser {
 
     private boolean shouldIgnore(JSONObject action) {
         return checkIgnore(
-                "trello.user.id",
+                XmlConstants.IGNORE_KEY_VALUE_USER_ID,
                 getUserId(action)
         ) || checkIgnore(
-                "trello.list.id",
+                XmlConstants.IGNORE_KEY_VALUE_LIST_ID,
                 getListId(action)
         );
     }
@@ -90,7 +91,7 @@ public class TrelloJsonParser {
     }
 
     private String getUserId(JSONObject action) {
-        JSONObject member = action.optJSONObject("memberCreator");
+        JSONObject member = action.optJSONObject(JsonConstants.OBJECT_MEMBER_CREATOR);
 
         if (member == null) {
             return null;
@@ -100,13 +101,13 @@ public class TrelloJsonParser {
     }
 
     private String getListId(JSONObject action) {
-        JSONObject data = action.optJSONObject("data");
+        JSONObject data = action.optJSONObject(JsonConstants.OBJECT_DATA);
 
         if (data == null) {
             return null;
         }
 
-        JSONObject list = data.optJSONObject("list");
+        JSONObject list = data.optJSONObject(JsonConstants.OBJECT_LIST);
 
         if (list == null) {
             return null;
