@@ -35,6 +35,9 @@ public final class XmlConstants {
             .map(Enum::name)
             .collect(Collectors.toSet());
 
+    public static final String IGNORE_KEY_VALUE_LIST_ID = "trello.list.id";
+    public static final String IGNORE_KEY_VALUE_USER_ID = "trello.user.id";
+
     public static final Set<String> ATTRIBUTE_IGNORE_KEY_VALUES = Set.of(
             "trello.list.id", "trello.user.id"
     );

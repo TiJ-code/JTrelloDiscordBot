@@ -37,4 +37,4 @@
 <!ATTLIST ignore
     key (trello.list.id | trello.user.id ) #REQUIRED>
 
-<!ELEMENT element (#PCDATA)
+<!ELEMENT element (#PCDATA)>

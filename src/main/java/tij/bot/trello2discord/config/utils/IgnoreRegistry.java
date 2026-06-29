@@ -14,12 +14,4 @@ public final class IgnoreRegistry {
     public List<String> getIgnoredElements(String key) {
         return ignores.get(key);
     }
-
-    public boolean isIgnored(String key, String value) {
-        return ignores.get(key).contains(value);
-    }
-
-    public Map<String, List<String>> getAll() {
-        return ignores;
-    }
 }
