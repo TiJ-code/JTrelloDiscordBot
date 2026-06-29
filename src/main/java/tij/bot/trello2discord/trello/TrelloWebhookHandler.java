@@ -2,6 +2,7 @@ package tij.bot.trello2discord.trello;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import java.net.HttpURLConnection;
 import org.json.JSONObject;
 import tij.bot.trello2discord.common.Message;
 import tij.bot.trello2discord.common.MessageBuffer;
@@ -19,10 +20,6 @@ public class TrelloWebhookHandler implements HttpHandler {
     private static final String RQ_HEAD = "HEAD";
     private static final String RQ_POST = "POST";
 
-    private static final int HTTP_CODE_OK = 200;
-    private static final int HTTP_CODE_BAD_REQUEST = 400;
-    private static final int HTTP_CODE_NOT_ALLOWED = 405;
-
     private final MessageBuffer buffer;
     private final TrelloJsonParser parser;
 
@@ -36,7 +33,7 @@ public class TrelloWebhookHandler implements HttpHandler {
         String requestMethod = httpExchange.getRequestMethod();
 
         if (RQ_HEAD.equalsIgnoreCase(requestMethod)) {
-            httpExchange.sendResponseHeaders(HTTP_CODE_OK, -1);
+            httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
             return;
         }
 
@@ -48,7 +45,7 @@ public class TrelloWebhookHandler implements HttpHandler {
                 JSONObject json = new JSONObject(query);
                 Optional<Message> optMsg = processTrelloEvent(json);
                 if (optMsg.isEmpty()) {
-                    httpExchange.sendResponseHeaders(HTTP_CODE_BAD_REQUEST, -1);
+                    httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_REQUEST, -1);
                     return;
                 }
                 buffer.queue(optMsg.get());
@@ -57,12 +54,12 @@ public class TrelloWebhookHandler implements HttpHandler {
             }
 
             String response = "OK";
-            httpExchange.sendResponseHeaders(HTTP_CODE_OK, response.length());
+            httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
         } else {
-            httpExchange.sendResponseHeaders(HTTP_CODE_NOT_ALLOWED, -1);
+            httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_METHOD, -1);
         }
     }
 
