@@ -37,9 +37,12 @@ public final class XmlConstants {
 
     public static final String IGNORE_KEY_VALUE_LIST_ID = "trello.list.id";
     public static final String IGNORE_KEY_VALUE_USER_ID = "trello.user.id";
+    public static final String IGNORE_KEY_VALUE_CARD_NAME_FORMAT = "trello.card.name.format";
 
     public static final Set<String> ATTRIBUTE_IGNORE_KEY_VALUES = Set.of(
-            "trello.list.id", "trello.user.id"
+            IGNORE_KEY_VALUE_LIST_ID,
+            IGNORE_KEY_VALUE_USER_ID,
+            IGNORE_KEY_VALUE_CARD_NAME_FORMAT
     );
 
     public static final String ATTR_FORMAT_KEY_VALUE_TITLE = "title";

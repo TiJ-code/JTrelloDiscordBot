@@ -13,6 +13,7 @@ import tij.bot.trello2discord.trello.utils.TemplateRenderer;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class TrelloJsonParser {
     private final EventRegistry registry;
@@ -77,6 +78,9 @@ public class TrelloJsonParser {
         ) || checkIgnore(
                 XmlConstants.IGNORE_KEY_VALUE_LIST_ID,
                 getListId(action)
+        ) || checkIgnoredFormat(
+                XmlConstants.IGNORE_KEY_VALUE_CARD_NAME_FORMAT,
+                getCardName(action)
         );
     }
 
@@ -88,6 +92,20 @@ public class TrelloJsonParser {
         List<String> ignored = ignoreRegistry.getIgnoredElements(ignoreKey);
 
         return ignored != null && ignored.contains(value);
+    }
+
+    private boolean checkIgnoredFormat(String ignoreKey, String value) {
+        if (value == null) {
+            return false;
+        }
+
+        List<String> ignored = ignoreRegistry.getIgnoredElements(ignoreKey);
+
+        if (ignored == null) {
+            return false;
+        }
+
+        return ignored.stream().anyMatch(ignoreFormat -> Pattern.compile(ignoreFormat).matcher(value).find());
     }
 
     private String getUserId(JSONObject action) {
@@ -114,5 +132,21 @@ public class TrelloJsonParser {
         }
 
         return list.optString("id", null);
+    }
+
+    private String getCardName(JSONObject action) {
+        JSONObject data = action.optJSONObject(JsonConstants.OBJECT_DATA);
+
+        if (data == null) {
+            return null;
+        }
+
+        JSONObject card = data.optJSONObject(JsonConstants.OBJECT_CARD);
+
+        if (card == null) {
+            return null;
+        }
+
+        return card.optString(JsonConstants.FIELD_NAME, null);
     }
 }

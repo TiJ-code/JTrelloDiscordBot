@@ -35,6 +35,6 @@
 
 <!ELEMENT ignore (element+)>
 <!ATTLIST ignore
-    key (trello.list.id | trello.user.id ) #REQUIRED>
+    key (trello.list.id | trello.user.id | trello.card.name.format ) #REQUIRED>
 
 <!ELEMENT element (#PCDATA)>
