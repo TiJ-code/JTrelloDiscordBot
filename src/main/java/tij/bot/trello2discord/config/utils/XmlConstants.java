@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class XmlConstants {
-    public static final int VERSION = 2;
+    public static final int VERSION = 3;
 
     public static final String TAG_CONFIG = "config";
     public static final String TAG_ENTRY = "entry";
@@ -18,6 +18,9 @@ public final class XmlConstants {
     public static final String TAG_FORMAT = "format";
     public static final String TAG_FIELDS = "fields";
     public static final String TAG_FIELD = "field";
+    public static final String TAG_IGNORES = "ignores";
+    public static final String TAG_IGNORE = "ignore";
+    public static final String TAG_ELEMENT = "element";
 
     public static final String ATTRIBUTE_CONFIG_VERSION = "version";
     public static final String ATTRIBUTE_ENTRY_NAME = "name";
@@ -25,11 +28,16 @@ public final class XmlConstants {
     public static final String ATTRIBUTE_USER_TRELLO = "trello.user.id";
     public static final String ATTRIBUTE_EVENT_NAME = "name";
     public static final String ATTRIBUTE_FORMAT_KEY = "key";
+    public static final String ATTRIBUTE_IGNORE_KEY = "key";
 
 
     public static final Set<String> ATTRIBUTE_EVENT_NAME_VALUES = Arrays.stream(MessageType.values())
             .map(Enum::name)
             .collect(Collectors.toSet());
+
+    public static final Set<String> ATTRIBUTE_IGNORE_KEY_VALUES = Set.of(
+            "trello.list.id", "trello.user.id"
+    );
 
     public static final String ATTR_FORMAT_KEY_VALUE_TITLE = "title";
     public static final String ATTR_FORMAT_KEY_VALUE_BODY = "body";
