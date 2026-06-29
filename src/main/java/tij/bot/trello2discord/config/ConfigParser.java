@@ -11,6 +11,7 @@ import tij.bot.trello2discord.config.utils.XmlConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +53,7 @@ public final class ConfigParser {
             return switch (version) {
                 case 1 -> parseV1(root);
                 case 2 -> parseV2(root);
+                case 3 -> parseV3(root);
                 default -> throw new IllegalArgumentException(
                         "Unsupported config version: " + version
                 );
@@ -71,7 +73,7 @@ public final class ConfigParser {
 
         List<ConfigUserMapping> mappings = parseUserMappings(root);
 
-        return new Config(channelId, botToken, port, mappings, null);
+        return new Config(channelId, botToken, port, mappings, null, null);
     }
 
     private static Config parseV2(Element root) {
@@ -84,7 +86,23 @@ public final class ConfigParser {
                 configV1.discordBotToken(),
                 configV1.port(),
                 configV1.discordTrelloUserMapping(),
-                events);
+                events,
+                null);
+    }
+
+    private static Config parseV3(Element root) {
+        Config configV2 = parseV2(root);
+
+        Map<String, List<String>> ignores = parseIgnores(root);
+
+        return new Config(
+                configV2.discordChannelId(),
+                configV2.discordBotToken(),
+                configV2.port(),
+                configV2.discordTrelloUserMapping(),
+                configV2.events(),
+                ignores
+        );
     }
 
     private static String getEntry(Element root, String key) {
@@ -172,7 +190,7 @@ public final class ConfigParser {
     private static Map<Integer, FieldTemplate> parseFields(Element event) {
         NodeList fields = event.getElementsByTagName(XmlConstants.TAG_FIELD);
 
-        Map<Integer, FieldTemplate> result = new java.util.HashMap<>();
+        Map<Integer, FieldTemplate> result = new HashMap<>();
 
         for (int i = 0; i < fields.getLength(); i++) {
             Element field = (Element) fields.item(i);
@@ -181,6 +199,34 @@ public final class ConfigParser {
             String body = getFormat(field, XmlConstants.ATTR_FORMAT_KEY_VALUE_BODY);
 
             result.put(i, new FieldTemplate(title, body));
+        }
+
+        return result;
+    }
+
+    private static Map<String, List<String>> parseIgnores(Element root) {
+        NodeList ignores = root.getElementsByTagName(XmlConstants.TAG_IGNORE);
+
+        Map<String, List<String>> result = new HashMap<>();
+
+        for (int i = 0; i < ignores.getLength(); i++) {
+            Element ignoreElement = (Element) ignores.item(i);
+
+            String ignoreKey = ignoreElement.getAttribute(XmlConstants.ATTRIBUTE_IGNORE_KEY);
+
+            if (!XmlConstants.ATTRIBUTE_IGNORE_KEY_VALUES.contains(ignoreKey)) {
+                throw new RuntimeException("Invalid <%s> %s attribute value!".formatted(XmlConstants.TAG_IGNORE, XmlConstants.ATTRIBUTE_IGNORE_KEY));
+            }
+
+            List<String> ignoredElements = new ArrayList<>();
+            result.put(ignoreKey, ignoredElements);
+
+            NodeList elementsToIgnore = ignoreElement.getElementsByTagName(XmlConstants.TAG_ELEMENT);
+
+            for (int j = 0; j < elementsToIgnore.getLength(); j++) {
+                Element elementEl = (Element) elementsToIgnore.item(j);
+                ignoredElements.add(elementEl.getTextContent().trim());
+            }
         }
 
         return result;

@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import tij.bot.trello2discord.common.Message;
 import tij.bot.trello2discord.common.MessageBuffer;
 import tij.bot.trello2discord.config.events.EventRegistry;
+import tij.bot.trello2discord.config.utils.IgnoreRegistry;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,9 +26,9 @@ public class TrelloWebhookHandler implements HttpHandler {
     private final MessageBuffer buffer;
     private final TrelloJsonParser parser;
 
-    public TrelloWebhookHandler(MessageBuffer buffer, EventRegistry eventRegistry) {
+    public TrelloWebhookHandler(MessageBuffer buffer, EventRegistry eventRegistry, IgnoreRegistry ignoreRegistry) {
         this.buffer = buffer;
-        this.parser = new TrelloJsonParser(eventRegistry);
+        this.parser = new TrelloJsonParser(eventRegistry, ignoreRegistry);
     }
 
     @Override
