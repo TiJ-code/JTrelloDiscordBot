@@ -65,7 +65,7 @@ public class TrelloJsonParser {
             String title = TemplateRenderer.render(action, field.title());
             String body = TemplateRenderer.render(action, field.body());
 
-            builder.addField(title, body);
+            builder.addField(title, body, field.inline());
         }
 
         return Optional.of(builder.build());

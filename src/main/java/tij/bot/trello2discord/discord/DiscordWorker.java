@@ -128,7 +128,7 @@ public class DiscordWorker {
             );
         }
 
-        msg.getFields().forEach((k, v) -> embed.addField(k, v, false));
+        msg.getFields().forEach((f) -> embed.addField(f.title(), f.bodyFormat(), f.inline()));
 
         channel.sendMessageEmbeds(embed.build()).queue();
     }

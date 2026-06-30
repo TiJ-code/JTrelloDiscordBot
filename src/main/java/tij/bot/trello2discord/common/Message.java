@@ -1,6 +1,8 @@
 package tij.bot.trello2discord.common;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Message {
@@ -10,7 +12,7 @@ public class Message {
     private final String boardName;
     private final String title;
     private final String body;
-    private final Map<String, String> fields;
+    private final List<MessageField> fields;
 
     private Message(Builder builder) {
         this.type = builder.type;
@@ -46,12 +48,12 @@ public class Message {
         return body;
     }
 
-    public Map<String, String> getFields() {
+    public List<MessageField> getFields() {
         return fields;
     }
 
     public static class Builder {
-        private final Map<String, String> fields = new HashMap<>();
+        private final List<MessageField> fields = new ArrayList<>();
         private final MessageType type;
         private final String authorName;
         private final String boardName;
@@ -80,8 +82,8 @@ public class Message {
             return this;
         }
 
-        public Builder addField(String key, String value) {
-            this.fields.put(key, value);
+        public Builder addField(String key, String value, boolean inline) {
+            this.fields.add(new MessageField(key, value, inline));
             return this;
         }
 
