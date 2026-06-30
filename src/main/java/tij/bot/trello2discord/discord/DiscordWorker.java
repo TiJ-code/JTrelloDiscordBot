@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.internal.utils.JDALogger;
 import tij.bot.trello2discord.common.Constants;
 import tij.bot.trello2discord.common.Message;
 import tij.bot.trello2discord.common.MessageBuffer;
@@ -28,6 +29,9 @@ public class DiscordWorker {
     public DiscordWorker(Config config, MessageBuffer buffer) throws InterruptedException {
         this.reload(config);
         this.buffer = buffer;
+
+        // Disabling as long as there is no logging integrated
+        JDALogger.setFallbackLoggerEnabled(false);
 
         System.out.println("Connecting to Discord...");
         this.jda = JDABuilder.createDefault(config.discordBotToken()).build().awaitReady();
