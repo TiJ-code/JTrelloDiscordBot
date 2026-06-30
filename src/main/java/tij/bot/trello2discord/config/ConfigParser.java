@@ -54,6 +54,7 @@ public final class ConfigParser {
                 case 1 -> parseV1(root);
                 case 2 -> parseV2(root);
                 case 3 -> parseV3(root);
+                case 4 -> parseV3(root);
                 default -> throw new IllegalArgumentException(
                         "Unsupported config version: " + version
                 );
@@ -195,10 +196,13 @@ public final class ConfigParser {
         for (int i = 0; i < fields.getLength(); i++) {
             Element field = (Element) fields.item(i);
 
+            String inlineAttr = field.getAttribute(XmlConstants.ATTRIBUTE_FIELD_INLINE);
+            boolean inline = Boolean.parseBoolean(inlineAttr);
+
             String title = getFormat(field, XmlConstants.ATTR_FORMAT_KEY_VALUE_TITLE);
             String body = getFormat(field, XmlConstants.ATTR_FORMAT_KEY_VALUE_BODY);
 
-            result.put(i, new FieldTemplate(title, body));
+            result.put(i, new FieldTemplate(title, body, inline));
         }
 
         return result;
