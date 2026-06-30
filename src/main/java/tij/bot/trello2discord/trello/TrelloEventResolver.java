@@ -26,6 +26,12 @@ public final class TrelloEventResolver {
             case JsonConstants.EVENT_REMOVED_LABEL_FROM_CARD ->
                     MessageType.CARD_REMOVED_LABEL;
 
+            case JsonConstants.EVENT_ADD_MEMBER_TO_CARD ->
+                    MessageType.CARD_MEMBER_ASSIGNED;
+
+            case JsonConstants.EVENT_REMOVE_MEMBER_FROM_CARD ->
+                    MessageType.CARD_MEMBER_UNASSIGNED;
+
             case JsonConstants.EVENT_UPDATE_CARD ->
                     resolveUpdate(data);
 

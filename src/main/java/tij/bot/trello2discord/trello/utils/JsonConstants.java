@@ -25,6 +25,8 @@ public final class JsonConstants {
     public static final String EVENT_UPDATE_CARD = "updateCard";
     public static final String EVENT_ADDED_LABEL_TO_CARD = "addLabelToCard";
     public static final String EVENT_REMOVED_LABEL_FROM_CARD = "removeLabelFromCard";
+    public static final String EVENT_ADD_MEMBER_TO_CARD = "addMemberToCard";
+    public static final String EVENT_REMOVE_MEMBER_FROM_CARD = "removeMemberFromCard";
 
 
     private JsonConstants() {}
