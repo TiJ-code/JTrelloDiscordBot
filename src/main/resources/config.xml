@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE config SYSTEM "config.3.dtd">
-<config version="3">
+<!DOCTYPE config SYSTEM "config.4.dtd">
+<config version="4">
     <entry name="discord.channel.id">YOUR_CHANNEL_ID_HERE</entry>
     <entry name="discord.bot.token">YOUR_BOT_TOKEN_HERE</entry>
     <entry name="port">65000</entry>
@@ -81,6 +81,26 @@
                 <field>
                     <format key="title">After</format>
                     <format key="body">{#data.card.name}</format>
+                </field>
+            </fields>
+        </event>
+        <event name="CARD_MEMBER_ASSIGNED">
+            <format key="title">User Assigned</format>
+            <format key="body"/>
+            <fields>
+                <field inline="true">
+                    <format key="title">Card</format>
+                    <format key="body">assigned to **{#data.card.name}**</format>
+                </field>
+            </fields>
+        </event>
+        <event name="CARD_MEMBER_UNASSIGNED">
+            <format key="title">User Unassigned</format>
+            <format key="body"/>
+            <fields>
+                <field inline="true">
+                    <format key="title">Card</format>
+                    <format key="body">unassigned from **{#data.card.name}**</format>
                 </field>
             </fields>
         </event>
