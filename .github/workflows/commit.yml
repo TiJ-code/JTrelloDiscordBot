@@ -24,9 +24,13 @@ jobs:
       name: ${{ steps.release.outputs.name }}
 
     steps:
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Create patch bump commit
         run: |
@@ -35,4 +39,4 @@ jobs:
           ./versioning.sh --bump=${{ inputs.bump }}
           git add pom.xml
           git commit -m "[ACTION] prepare next iteration $(./versioning.sh --string)"
-          git push
+          git push origin ${{ steps.extract_branch.outputs.branch }}
